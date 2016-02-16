@@ -4,12 +4,8 @@
 # the smallest subset of the trace that also fails the model.  This
 # makes it easier to determine *why* a trace does not satisfy a model.
 
-# This simple shrinker is only really effective when each store of a
-# value to an address appears textually before the loads of that value
-# from that address.  Fortunately, this property is quite likely for
-# real hardware trace-generators (but sadly not for the random traces
-# present in the 'tests' directory).  This shinker is also rather slow
-# for large traces.
+# This simple shrinker is often effective but also rather slow for
+# large traces.
 
 import subprocess
 import sys
