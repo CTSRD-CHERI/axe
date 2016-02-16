@@ -587,6 +587,24 @@ void Trace::computeNextSeen()
   delete [] initial;
 }
 
+// ==========================
+// Remove end-times of stores
+// ==========================
+
+// Remove end-times for store operations.  This is done to give the
+// property that PSO is always a subset of WMO: when computing local
+// dependencies (see Edges.cpp), store operations with end-times can
+// upset this property.
+
+void Trace::stripStoreEndTimes()
+{
+  for (int i = 0; i < numInstrs; i++) {
+    Instr instr = instrs[i];
+    if (instr.op == ST)
+      instrs[i].endTime = -1;
+  }
+}
+
 // ===============
 // Begin-after-end
 // ===============
@@ -619,6 +637,7 @@ Trace::Trace(Seq<Instr>* instrs)
   computeReadsFrom();
   splitThreads();
   sanityCheck();
+  stripStoreEndTimes();
   computeFinalVals();
   computePrevLocalStore();
   computeNextLocalStore();
