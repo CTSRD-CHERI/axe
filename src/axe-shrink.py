@@ -16,10 +16,13 @@ if len(sys.argv) != 3:
   sys.exit()
 
 # Open trace
-f = open(sys.argv[2], 'r')
-if f == None:
-  print "File not found: ", sys.argv[2]
-  sys.exit()
+if sys.argv[2] == "-":
+  f = sys.stdin
+else:
+  f = open(sys.argv[2], 'r')
+  if f == None:
+    print "File not found: ", sys.argv[2]
+    sys.exit()
 
 # Read trace
 lines = []
