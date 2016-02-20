@@ -249,6 +249,10 @@ void Trace::splitThreads()
 //  * value 0 (initial value) can only be read, not written
 //  * begin times are strictly increasing per thread
 //  * end times are stictly larger than begin times
+//  * store operations don't contain end times
+//
+// (Prohibiting end-times on stores is done to give the
+// property that PSO is always a subset of WMO.)
 
 void Trace::sanityCheck()
 {
@@ -256,6 +260,8 @@ void Trace::sanityCheck()
     Time prev = -1;
     for (int i = 0; i < threads[t].numElems; i++) {
       Instr instr = instrs[threads[t].elems[i]];
+      if (instr.op == ST && instr.endTime >= 0)
+        traceError("End-times for stores are currently disallowed");
       if (instr.op == ST || instr.op == RMW)
         if (instr.writeVal == 0)
           traceError("Initial value '0' can not be written");
@@ -587,24 +593,6 @@ void Trace::computeNextSeen()
   delete [] initial;
 }
 
-// ==========================
-// Remove end-times of stores
-// ==========================
-
-// Remove end-times for store operations.  This is done to give the
-// property that PSO is always a subset of WMO: when computing local
-// dependencies (see Edges.cpp), store operations with end-times can
-// upset this property.
-
-void Trace::stripStoreEndTimes()
-{
-  for (int i = 0; i < numInstrs; i++) {
-    Instr instr = instrs[i];
-    if (instr.op == ST)
-      instrs[i].endTime = -1;
-  }
-}
-
 // ===============
 // Begin-after-end
 // ===============
@@ -637,7 +625,6 @@ Trace::Trace(Seq<Instr>* instrs)
   computeReadsFrom();
   splitThreads();
   sanityCheck();
-  stripStoreEndTimes();
   computeFinalVals();
   computePrevLocalStore();
   computeNextLocalStore();

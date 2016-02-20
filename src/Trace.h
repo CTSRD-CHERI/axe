@@ -24,7 +24,6 @@ class Trace {
    void computeFirstSync();
    void computePrevSync();
    void computeNextSync();
-   void stripStoreEndTimes();
 
  public:
    int numInstrs;
