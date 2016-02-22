@@ -1,4 +1,21 @@
-   BERI HARDWARE-SOFTWARE LICENSE v1.0
+Copyright (c) 2016 Matthew Naylor, University of Cambridge.
+All Rights Reserved.
+
+This software was developed by SRI International and the University of
+Cambridge Computer Laboratory under DARPA/AFRL contract
+FA8750-10-C-0237 ("CTSRD"), as part of the DARPA CRASH research
+programme.
+
+This software was developed by SRI International and the University of
+Cambridge Computer Laboratory under DARPA/AFRL contract
+FA8750-11-C-0249 ("MRC2"), as part of the DARPA MRC research
+programme.
+
+This software was developed by the University of Cambridge Computer
+Laboratory as part of the Rigorous Engineering of Mainstream Systems
+(REMS) project, funded by EPSRC grant EP/K008528/1.
+
+BERI HARDWARE-SOFTWARE LICENSE v1.0
 
    This license is based closely on the Apache License Version 2.0, but is
    not approved or endorsed by the Apache Foundation.  Changes primarily
