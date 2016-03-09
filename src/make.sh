@@ -9,4 +9,5 @@ g++ -O2 -Wconversion -std=c++0x -I . -o axe \
   Trace.cpp      \
   Analysis.cpp   \
   Models.cpp     \
-  ValOrder.cpp
+  ValOrder.cpp   \
+  Options.cpp

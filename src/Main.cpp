@@ -5,26 +5,13 @@
 #include "Parser.h"
 #include "Instr.h"
 #include "Models.h"
-
-// ==================
-// Display usage info
-// ==================
-
-void usage()
-{
-  printf("Usage:\n");
-  printf("  axe check <MODEL> <FILE> [-g]\n");
-  printf("  axe test  <MODEL> <FILE> <FILE> [-g]\n");
-  printf("Where:\n");
-  printf("  <MODEL> ::= SC|TSO|PSO|WMO|POW\n");
-  printf("  -g          assume global clock domain\n");
-}
+#include "Options.h"
 
 // =================
 // Top-level checker
 // =================
 
-void axeCheck(char* modelName, char* fileName, bool globalClock)
+void axeCheck(char* modelName, char* fileName, Options opts)
 {
   // Parse model name and trace file
   Model model;
@@ -34,7 +21,7 @@ void axeCheck(char* modelName, char* fileName, bool globalClock)
   // Check trace(s)
   Seq<Instr> instrs;
   while (parser.parseTrace(&instrs)) {
-    bool ok = check(&model, &instrs, globalClock);
+    bool ok = check(&model, &instrs, opts);
     if (ok)
       printf("OK\n");
     else
@@ -56,7 +43,7 @@ void testError(const char* msg)
 int axeTest(char* modelName,
             char* traceFileName,
             char* answerFileName,
-            bool globalClock)
+            Options opts)
 {
   // Open answer file
   FILE* fp = fopen(answerFileName, "rt");
@@ -81,7 +68,7 @@ int axeTest(char* modelName,
 
     bool got = parser.parseTrace(&instrs);
     if (! got) testError("Answer file longer than trace file");
-    bool ok = check(&model, &instrs, globalClock);
+    bool ok = check(&model, &instrs, opts);
     if (ok != ans) {
       printf("Test %i failed\n", testNum);
       if (strlen(line) > 3)
@@ -106,14 +93,14 @@ int axeTest(char* modelName,
 
 int main(int argc, char* argv[])
 {
-  bool globalClock = false;
+  Options opts;
   if (argc >= 4 && strcmp(argv[1], "check") == 0) {
-    if (argc > 4 && !strcmp(argv[4], "-g")) globalClock = true;
-    axeCheck(argv[2], argv[3], globalClock);
+    for (int i = 4; i < argc; i++) opts.set(argv[i]);
+    axeCheck(argv[2], argv[3], opts);
   }
   else if (argc >= 5 && strcmp(argv[1], "test") == 0) {
-    if (argc > 5 && !strcmp(argv[5], "-g")) globalClock = true;
-    return axeTest(argv[2], argv[3], argv[4], globalClock);
+    for (int i = 5; i < argc; i++) opts.set(argv[i]);
+    return axeTest(argv[2], argv[3], argv[4], opts);
   }
   else {
     usage();

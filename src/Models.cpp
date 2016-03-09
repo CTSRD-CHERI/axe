@@ -6,6 +6,7 @@
 #include "Edges.h"
 #include "Analysis.h"
 #include "ValOrder.h"
+#include "Options.h"
 
 // =======================
 // Parse model from string
@@ -29,24 +30,37 @@ void parseModel(char* str, Model* model)
   }
 }
 
+// ==========================
+// Drop timestamp information
+// ==========================
+
+void dropTimestamps(Seq<Instr>* instrs)
+{
+  for (int i = 0; i < instrs->numElems; i++) {
+    instrs->elems[i].beginTime = -1;
+    instrs->elems[i].endTime   = -1;
+  }
+}
+
 // =========================
 // Check trace against model
 // =========================
 
-bool checkPOW(Seq<Instr>* instrs, bool globalClock)
+bool checkPOW(Seq<Instr>* instrs, Options opts)
 {
   Trace trace(instrs);
+
   trace.computePrevSeen();
   trace.computeNextSeen();
 
   ValOrder valOrder(&trace);
 
-  if (! valOrder.initialise(globalClock)) return false;
+  if (! valOrder.initialise(opts.globalClock)) return false;
 
   return valOrder.check();
 }
 
-bool checkOther(Model* model, Seq<Instr>* instrs)
+bool checkOther(Model* model, Seq<Instr>* instrs, Options opts)
 {
   Trace trace(instrs);
 
@@ -82,10 +96,11 @@ bool checkOther(Model* model, Seq<Instr>* instrs)
   return analysis.check();
 }
 
-bool check(Model* model, Seq<Instr>* instrs, bool globalClock)
+bool check(Model* model, Seq<Instr>* instrs, Options opts)
 {
+  if (opts.ignoreTimestamps) dropTimestamps(instrs);
   if (model->tag == POW)
-    return checkPOW(instrs, globalClock);
+    return checkPOW(instrs, opts);
   else
-    return checkOther(model, instrs);
+    return checkOther(model, instrs, opts);
 }
