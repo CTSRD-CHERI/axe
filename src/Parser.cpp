@@ -175,6 +175,7 @@ void Parser::parseTimestamp(Time* begin, Time* end)
 Instr Parser::parseInstr()
 {
   Instr i;
+  i.lineNumber = lineNumber;
   if (eat('c')) {
     demandString("heck");
     i.uid = -1;

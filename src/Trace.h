@@ -25,6 +25,8 @@ class Trace {
    void computePrevSync();
    void computeNextSync();
 
+   void traceError(Instr instr, const char* msg);
+
  public:
    int numInstrs;
    int numThreads;

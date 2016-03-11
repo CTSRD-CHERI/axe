@@ -6,9 +6,11 @@
 // Raise error and abort
 // =====================
 
-static void traceError(const char* msg)
+void Trace::traceError(Instr instr, const char* msg)
 {
-  fprintf(stderr, "Input trace error:\n%s\n", msg);
+  fprintf(stderr, "Input trace error");
+  if (instr.lineNumber >= 0) fprintf(stderr, " on line %i", instr.lineNumber);
+  fprintf(stderr, ":\n%s\n", msg);
   exit(EXIT_FAILURE);
 }
 
@@ -34,7 +36,7 @@ void Trace::computeInstrMap(Seq<Instr>* instrSeq)
       continue;
     }
     if (instr.uid < 0 || instr.uid >= numInstrs)
-      traceError("Instruction id out of range");
+      traceError(instr, "Instruction id out of range");
     if (instr.op == SYNC) numSyncs++;
     if (instr.op == RMW) numRMWs++;
     instrs[instr.uid] = instr;
@@ -64,9 +66,9 @@ void Trace::compactThreadAndAddrRanges()
   for (int i = 0; i < numInstrs; i++) {
     Instr instr = instrs[i];
     if (hasAddr(instr) && instr.addr >= MAX_ADDRS)
-      traceError("Address out of range");
+      traceError(instr, "Address out of range");
     if (instr.tid >= MAX_THREADS)
-      traceError("Thread id out of range");
+      traceError(instr, "Thread id out of range");
     if (hasAddr(instr) && addrMap[instr.addr] < 0)
       addrMap[instr.addr] = numAddrs++;
     if (tidMap[instr.tid] < 0)
@@ -76,7 +78,7 @@ void Trace::compactThreadAndAddrRanges()
   for (int i = 0; i < finals.numElems; i++) {
     Instr instr = finals.elems[i];
     if (instr.addr >= MAX_ADDRS)
-      traceError("Address out of range");
+      traceError(instr, "Address out of range");
     if (addrMap[instr.addr] < 0)
       addrMap[instr.addr] = numAddrs++;
   }
@@ -121,7 +123,7 @@ void Trace::compactDataRanges()
     Instr instr = instrs[i];
     if (instr.op == ST || instr.op == RMW) {
       if (instr.writeVal >= MAX_DATA)
-        traceError("Data value out of range");
+        traceError(instr, "Data value out of range");
       int idx = instr.writeVal*numAddrs + instr.addr;
       if (! dataMap.member(idx))
         dataMap.insert(idx, numData[instr.addr]++);
@@ -132,7 +134,7 @@ void Trace::compactDataRanges()
     Instr instr = instrs[i];
     if (instr.op == LD || instr.op == RMW) {
       if (instr.readVal >= MAX_DATA)
-        traceError("Data value out of range");
+        traceError(instr, "Data value out of range");
       int idx = instr.readVal*numAddrs + instr.addr;
       if (! dataMap.member(idx))
         dataMap.insert(idx, numData[instr.addr]++);
@@ -142,7 +144,7 @@ void Trace::compactDataRanges()
   for (int i = 0; i < finals.numElems; i++) {
     Instr instr = finals.elems[i];
     if (instr.readVal >= MAX_DATA)
-      traceError("Data value out of range");
+      traceError(instr, "Data value out of range");
     int idx = instr.readVal*numAddrs + instr.addr;
     if (! dataMap.member(idx))
       dataMap.insert(idx, numData[instr.addr]++);
@@ -193,7 +195,7 @@ void Trace::computeReadsFrom()
       InstrId result;
       bool found = hash.lookup(key, &result);
       if (found)
-        traceError("Reads-from function is ambiguous");
+        traceError(instr, "Reads-from function is ambiguous");
       else
         hash.insert(key, instr.uid);
     }
@@ -208,7 +210,7 @@ void Trace::computeReadsFrom()
       if (found)
         readsFrom[instr.uid] = result;
       else if (instr.readVal != 0)
-        traceError("Found load with no corresponding store");
+        traceError(instr, "Found load with no corresponding store");
     }
   }
 
@@ -221,7 +223,7 @@ void Trace::computeReadsFrom()
     if (found)
       finals.elems[i].uid = result;
     else if (instr.readVal != 0)
-      traceError("Found load with no corresponding store");
+      traceError(instr, "Found load with no corresponding store");
   }
 }
 
@@ -261,15 +263,15 @@ void Trace::sanityCheck()
     for (int i = 0; i < threads[t].numElems; i++) {
       Instr instr = instrs[threads[t].elems[i]];
       if (instr.op == ST && instr.endTime >= 0)
-        traceError("End-times for stores are currently disallowed");
+        traceError(instr, "End-times for stores are currently disallowed");
       if (instr.op == ST || instr.op == RMW)
         if (instr.writeVal == 0)
-          traceError("Initial value '0' can not be written");
+          traceError(instr, "Initial value '0' can not be written");
       if (instr.beginTime >= 0 && instr.endTime >= 0 &&
             instr.endTime <= instr.beginTime)
-        traceError("End times must be greater than start times");
+        traceError(instr, "End times must be greater than start times");
       if (prev >= 0 && instr.beginTime >= 0 && prev >= instr.beginTime)
-        traceError("Start times must be strictly increasing per thread");
+        traceError(instr, "Start times must be strictly increasing per thread");
       if (instr.beginTime >= 0) prev = instr.beginTime;
     }
   }
@@ -289,7 +291,7 @@ void Trace::computeFinalVals()
   for (int i = 0; i < finals.numElems; i++) {
     Instr fin = finals.elems[i];
     if (finalVals[fin.addr] >= 0)
-      traceError("'final' constraints are contradictory");
+      traceError(fin, "'final' constraints are contradictory");
     finalVals[fin.addr] = fin.readVal;
   }
 }

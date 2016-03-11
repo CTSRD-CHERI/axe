@@ -44,6 +44,10 @@ struct Instr {
 
   // Optional timestamps
   Time beginTime, endTime;
+
+  // Line number of operation in trace
+  // (-1 if unknown)
+  int lineNumber;
 };
 
 void printInstr(Instr i);
