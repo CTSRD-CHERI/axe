@@ -123,11 +123,15 @@ bool Analysis::computeNext()
   return true;
 }
 
-bool Analysis::existsPath(InstrId src, InstrId dstStore)
+bool Analysis::existsPath(InstrId src, InstrId dst)
 {
-  Instr dstInstr = trace->instrs[dstStore];
+  Instr dstInstr = trace->instrs[dst];
   int idx = dstInstr.tid * trace->numAddrs + dstInstr.addr;
-  return nextStore[src][idx] <= dstStore;
+  if (dstInstr.op == ST || dstInstr.op == RMW)
+    return nextStore[src][idx] <= dst;
+  else if (dstInstr.op == LD)
+    return nextLoad[src][idx] <= dst;
+  return false;
 }
 
 void Analysis::inferFrom(InstrId src, Seq<Edge>* inferred)
@@ -173,6 +177,8 @@ bool Analysis::addEdgeHelper(Edge e, Seq<Edge>* inferred)
   Seq<InstrId> in(64);
 
   if (graph->outEdges[e.src].member(e.dst)) return true;
+  if (existsPath(e.dst, e.src)) return false;
+  if (existsPath(e.src, e.dst)) return true;
   back.addEdge(graph, e);
   propagateInstr(e.dst, e.src);
   propagateNext(e.dst, e.src);
