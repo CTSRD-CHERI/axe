@@ -14,6 +14,12 @@ void Trace::traceError(Instr instr, const char* msg)
   exit(EXIT_FAILURE);
 }
 
+void Trace::traceErrorSimple(const char* msg)
+{
+  fprintf(stderr, "Input trace error:\n%s\n", msg);
+  exit(EXIT_FAILURE);
+}
+
 // ===================================
 // Pass 1: compute instruction mapping
 // ===================================
@@ -54,46 +60,44 @@ void Trace::computeInstrMap(Seq<Instr>* instrSeq)
 void Trace::compactThreadAndAddrRanges()
 {
   // Thread and address mappings
-  ThreadId tidMap[MAX_THREADS];
-  Addr addrMap[MAX_ADDRS];
+  Hash<ThreadId> tidMap(intLog2(MAX_THREADS) >> 2);
+  Hash<Addr> addrMap(intLog2(MAX_ADDRS) >> 2);
 
-  // Initialise address and thread mappings
-  for (int i = 0; i < MAX_THREADS; i++) tidMap[i] = -1;
-  for (int i = 0; i < MAX_ADDRS; i++) addrMap[i] = -1;
+  // Initialise thread and address counts
   numThreads = numAddrs = 0;
 
   // Compute address and thread mappings
   for (int i = 0; i < numInstrs; i++) {
     Instr instr = instrs[i];
-    if (hasAddr(instr) && instr.addr >= MAX_ADDRS)
-      traceError(instr, "Address out of range");
-    if (instr.tid >= MAX_THREADS)
-      traceError(instr, "Thread id out of range");
-    if (hasAddr(instr) && addrMap[instr.addr] < 0)
-      addrMap[instr.addr] = numAddrs++;
-    if (tidMap[instr.tid] < 0)
-      tidMap[instr.tid] = numThreads++;
+    if (hasAddr(instr) && !addrMap.member(instr.addr))
+      addrMap.insert(instr.addr, numAddrs++);
+    if (!tidMap.member(instr.tid))
+      tidMap.insert(instr.tid, numThreads++);
+    if (numAddrs > MAX_ADDRS)
+      traceErrorSimple("Max number of addresses exceeded");
+    if (numThreads > MAX_THREADS)
+      traceErrorSimple("Max number of threads exceeded");
   }
 
   for (int i = 0; i < finals.numElems; i++) {
     Instr instr = finals.elems[i];
-    if (instr.addr >= MAX_ADDRS)
-      traceError(instr, "Address out of range");
-    if (addrMap[instr.addr] < 0)
-      addrMap[instr.addr] = numAddrs++;
+    if (!addrMap.member(instr.addr))
+      addrMap.insert(instr.addr, numAddrs++);
+    if (numAddrs > MAX_ADDRS)
+      traceErrorSimple("Max number of addresses exceeded");
   }
 
   // Apply address and thread mappings
   for (int i = 0; i < numInstrs; i++) {
     Instr instr = instrs[i];
-    if (hasAddr(instr)) instr.addr = addrMap[instr.addr];
-    instr.tid = tidMap[instr.tid];
+    if (hasAddr(instr)) addrMap.lookup(instr.addr, &instr.addr);
+    tidMap.lookup(instr.tid, &instr.tid);
     instrs[i] = instr;
   }
 
   for (int i = 0; i < finals.numElems; i++) {
     Instr instr = finals.elems[i];
-    instr.addr = addrMap[instr.addr];
+    addrMap.lookup(instr.addr, &instr.addr);
     finals.elems[i] = instr;
   }
 }

@@ -1,9 +1,9 @@
 #ifndef _INSTR_H_
 #define _INSTR_H_
 
-#define MAX_ADDRS   256
-#define MAX_THREADS 1024
-#define MAX_DATA    8388608
+#define MAX_THREADS    256
+#define MAX_ADDRS      256
+#define MAX_DATA       8388608
 
 typedef int InstrId;
 typedef int ThreadId;

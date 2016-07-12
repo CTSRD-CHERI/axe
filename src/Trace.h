@@ -26,6 +26,7 @@ class Trace {
    void computeNextSync();
 
    void traceError(Instr instr, const char* msg);
+   void traceErrorSimple(const char* msg);
 
  public:
    int numInstrs;

@@ -153,7 +153,6 @@ Addr Parser::parseAddr()
   }
   else
     parseError("Variable expected");
-  if (addr >= MAX_ADDRS) parseError("Address out of range");
   return addr;
 }
 
@@ -196,7 +195,6 @@ Instr Parser::parseInstr()
   }
   i.uid = nextId++;
   i.tid = parseNat();
-  if (i.tid >= MAX_THREADS) parseError("Thread id out of range");
   i.beginTime = i.endTime = -1;
   spaces();
   demand(':');
