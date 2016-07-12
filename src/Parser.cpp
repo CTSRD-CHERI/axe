@@ -143,7 +143,9 @@ Addr Parser::parseAddr()
   char c = getChar();
   if (c == 'M') {
     demand('[');
+    spaces();
     addr = parseNat();
+    spaces();
     demand(']');
   }
   else if (c == 'v') {
