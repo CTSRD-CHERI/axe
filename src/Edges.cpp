@@ -350,11 +350,34 @@ void initialValueEdges(Trace* trace, Seq<Edge>* result)
     Instr instr = trace->instrs[i];
     if (instr.op == LD || instr.op == RMW)
       if (instr.readVal == 0)
-        for (int t = 0; t < trace->numThreads; t++)
-          if (instr.tid != t) {
-            InstrId store = trace->firstStore[instr.addr][t];
-            if (store >= 0) result->append(edge(instr.uid, store));
-          }
+        for (int t = 0; t < trace->numThreads; t++) {
+          InstrId store = trace->firstStore[instr.addr][t];
+          if (store >= 0 && store != instr.uid)
+            result->append(edge(instr.uid, store));
+        }
+  }
+}
+
+// ========================
+// Locally-consistent edges
+// ========================
+
+// For each load of a value V from address A, add an edge to this load
+// from the previous local store to A if that store wrote a value
+// different than V.
+
+void locallyConsistentEdges(Trace* trace, Seq<Edge>* result)
+{
+  for (int i = 0; i < trace->numInstrs; i++) {
+    Instr instr = trace->instrs[i];
+    if (instr.op == LD || instr.op == RMW) {
+      InstrId prev = trace->prevLocalStore[instr.uid];
+      if (prev >= 0) {
+        Instr prevInstr = trace->instrs[prev];
+        if (prevInstr.writeVal != instr.readVal)
+          result->append(edge(prev, instr.uid));
+      }
+    }
   }
 }
 

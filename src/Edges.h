@@ -18,6 +18,7 @@ void localWMOEdges(Trace* trace, Seq<Edge>* result);
 void localDepEdges(Trace* trace, Seq<Edge>* result);
 void interEdges(Trace* trace, Seq<Edge>* result);
 void initialValueEdges(Trace* trace, Seq<Edge>* result);
+void locallyConsistentEdges(Trace* trace, Seq<Edge>* result);
 void finalValueEdges(Trace* trace, Seq<Edge>* result);
 
 #endif

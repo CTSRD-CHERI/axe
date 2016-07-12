@@ -67,6 +67,7 @@ bool checkOther(Model* model, Seq<Instr>* instrs, Options opts)
   Seq<Edge> edges(instrs->numElems);
   interEdges(&trace, &edges);
   initialValueEdges(&trace, &edges);
+  locallyConsistentEdges(&trace, &edges);
   finalValueEdges(&trace, &edges);
 
   switch (model->tag) {
