@@ -1,6 +1,6 @@
 #!/bin/sh
 
-DIRS="litmus random"
+DIRS="litmus random more-random"
 MODELS="SC TSO PSO WMO POW"
 
 if [ "$1" = "clean" ]; then
