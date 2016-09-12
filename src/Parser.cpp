@@ -258,6 +258,7 @@ bool Parser::parseTrace(Seq<Instr>* instrs)
   if (done) return false;
   instrs->clear();
   nextId = 0;
+  spaces();
   while (! feof(fp)) {
     spaces();
     Instr i = parseInstr();
