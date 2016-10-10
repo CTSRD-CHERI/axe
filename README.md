@@ -20,5 +20,11 @@ bench, as well as auto-generated ISA-level tests.
 generated using the RTL-level
 [groundtest](https://github.com/ucb-bar/rocket-chip/tree/master/src/main/scala/groundtest) framework.
 
-For details, see the [Axe
+A [paper](https://www.repository.cam.ac.uk/handle/1810/260225) about
+Axe was published at [FMCAD
+2016](http://www.cs.utexas.edu/users/hunt/FMCAD/FMCAD16). Slides from
+the presentation are
+[here](http://www.cs.utexas.edu/users/hunt/FMCAD/FMCAD16/slides/s7t4.pdf).
+
+Further details may be found in the [Axe
 manual](https://github.com/CTSRD-CHERI/axe/raw/master/doc/manual.pdf).
